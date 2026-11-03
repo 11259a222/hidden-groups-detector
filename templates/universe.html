@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Universe - Output</title>
+<style>
+body{margin:0;background:#000;overflow:hidden;font-family:Arial}
+canvas{display:block}
+.nav{position:fixed;top:15px;right:20px;z-index:10}
+.nav a{color:#aaa;text-decoration:none;margin:0 12px;font-size:14px} .nav a:hover{color:white}
+.info{position:fixed;bottom:20px;left:20px;color:#666;font-size:13px;z-index:10;background:rgba(0,0,0,0.7);padding:15px;border-radius:10px}
+.legend{position:fixed;top:20px;left:20px;z-index:10;color:white}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;box-shadow:0 0 10px currentColor}
+</style>
+</head>
+<body>
+<div class="nav"><a href="/">Home</a><a href="/dataset">Dataset</a><a href="/algorithm">Algorithm</a><a href="/universe">Universe</a></div>
+<div class="legend">
+<h3 style="margin:0 0 10px 0">Hidden Groups Universe</h3>
+<p style="margin:5px 0"><span class="dot" style="background:#00f2ff;color:#00f2ff"></span> Group 0 - Low Income</p>
+<p style="margin:5px 0"><span class="dot" style="background:#ff00ff;color:#ff00ff"></span> Group 1 - High Spenders</p>
+<p style="margin:5px 0"><span class="dot" style="background:#00ff88;color:#00ff88"></span> Group 2 - Budget</p>
+<p style="margin:5px 0"><span class="dot" style="background:#ffaa00;color:#ffaa00"></span> Group 3 - Rich & Low Spend</p>
+<p style="margin:5px 0"><span class="dot" style="background:#7a00ff;color:#7a00ff"></span> Group 4 - Target Customers</p>
+</div>
+<canvas id="c"></canvas>
+<div class="info">Mouse Drag to Move | Scroll to Zoom | 200 Dotted Points | Same like ExoAtlas</div>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+let points=[], centers=[], scale=3, offsetX=canvas.width/2, offsetY=canvas.height/2, drag=false, lastX, lastY;
+const colors=['#00f2ff','#ff00ff','#00ff88','#ffaa00','#7a00ff'];
+
+fetch('/api/data').then(r=>r.json()).then(data=>{
+  points=data.map(d=>({x:d.AnnualIncome*scale*2, y:d.SpendingScore*scale*2, c:d.Cluster}));
+  draw();
+});
+fetch('/api/centers').then(r=>r.json()).then(data=>{ centers=data; });
+
+function draw(){
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // stars background
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  for(let i=0;i<200;i++){ ctx.fillRect(Math.random()*canvas.width,Math.random()*canvas.height,1,1); }
+
+  points.forEach(p=>{
+    const x=p.x*scale + offsetX - 200;
+    const y=canvas.height - (p.y*scale + offsetY - 200);
+    // glowing effect like ExoAtlas
+    ctx.shadowBlur=15; ctx.shadowColor=colors[p.c];
+    ctx.fillStyle=colors[p.c];
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    // inner bright dot
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(x,y,1.5,0,Math.PI*2); ctx.fill();
+  });
+  // draw centers
+  centers.forEach((cen,i)=>{
+    const x=cen[0]*scale*2*scale + offsetX - 200;
+    const y=canvas.height - (cen[1]*scale*2*scale + offsetY - 200);
+    ctx.strokeStyle=colors[i]; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  });
+  requestAnimationFrame(draw);
+}
+// drag & zoom like ExoAtlas
+canvas.addEventListener('mousedown',e=>{drag=true; lastX=e.clientX; lastY=e.clientY});
+canvas.addEventListener('mouseup',()=>drag=false);
+canvas.addEventListener('mousemove',e=>{if(drag){offsetX+=e.clientX-lastX; offsetY+=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;}});
+canvas.addEventListener('wheel',e=>{scale+=e.deltaY*-0.001; scale=Math.min(Math.max(1,scale),8);});
+</script>
+</body>
+</html>

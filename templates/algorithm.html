@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Algorithm - KMeans</title>
+<style>
+body{background:#000;color:white;font-family:Arial;padding:40px;max-width:800px}
+.nav a{color:#aaa;text-decoration:none;margin:0 15px}
+h1{color:#ff00ff} h2{color:#00f2ff}
+.box{background:#0a0a0a;padding:20px;border-radius:15px;border-left:4px solid #00f2ff;margin:20px 0}
+code{color:#00ff88}
+</style>
+</head>
+<body>
+<div class="nav"><a href="/">Home</a><a href="/dataset">Dataset</a><a href="/algorithm">Algorithm</a><a href="/universe">Universe</a></div>
+<h1>ML Algorithm: Unsupervised Learning</h1>
+<div class="box">
+<h2>What is K-Means?</h2>
+<p>No labels! Machine itself finds hidden groups. Like ExoAtlas groups planets, we group customers.</p>
+<p><code>from sklearn.cluster import KMeans<br>kmeans = KMeans(n_clusters=5)<br>clusters = kmeans.fit_predict(data)</code></p>
+</div>
+<div class="box">
+<h2>How it works?</h2>
+<p>1. Pick 5 random centers<br>2. Assign each dot to nearest center<br>3. Move center to middle<br>4. Repeat till stable → 5 groups found!</p>
+</div>
+<div class="box">
+<h2>Our 5 Cluster Centers ({{ count }} points)</h2>
+{% for c in centers %}
+<p>Group {{ loop.index }}: Income {{ "%.1f"|format(c[0]) }} k$, Score {{ "%.1f"|format(c[1]) }}</p>
+{% endfor %}
+</div>
+<a href="/universe" style="padding:15px 30px;background:linear-gradient(90deg,#ff00ff,#00f2ff);color:white;text-decoration:none;border-radius:30px;display:inline-block">See Final Output → Universe</a>
+</body>
+</html>
